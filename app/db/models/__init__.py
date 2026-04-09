@@ -6,6 +6,7 @@ from app.db.models.account import Account
 from app.db.models.transaction import Transaction
 from app.db.models.goal import Goal
 from app.db.models.purchase_decision import PurchaseDecision
+from app.db.models.conversation_context import ConversationContext
 
 __all__ = [
     "User",
@@ -14,4 +15,6 @@ __all__ = [
     "Transaction",
     "Goal",
     "PurchaseDecision",
+    "ConversationContext",
 ]
+

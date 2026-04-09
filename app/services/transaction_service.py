@@ -112,3 +112,47 @@ async def _period_spending(
         .where(Transaction.transaction_date <= end)
     )
     return Decimal(str(result.scalar() or 0))
+
+
+async def get_last_transaction(
+    db: AsyncSession, user_id: int
+) -> Transaction | None:
+    """Get the most recent transaction for a user (for corrections/cancellations)."""
+    result = await db.execute(
+        select(Transaction)
+        .where(Transaction.user_id == user_id)
+        .order_by(Transaction.transaction_date.desc())
+        .limit(1)
+    )
+    return result.scalar_one_or_none()
+
+
+async def delete_transaction(
+    db: AsyncSession, transaction_id: int
+) -> bool:
+    """Delete a transaction by ID. Returns True if deleted."""
+    result = await db.execute(
+        select(Transaction).where(Transaction.id == transaction_id)
+    )
+    tx = result.scalar_one_or_none()
+    if tx:
+        await db.delete(tx)
+        await db.flush()
+        return True
+    return False
+
+
+async def update_transaction_amount(
+    db: AsyncSession, transaction_id: int, new_amount: Decimal
+) -> Transaction | None:
+    """Update the amount of a transaction (for corrections)."""
+    result = await db.execute(
+        select(Transaction).where(Transaction.id == transaction_id)
+    )
+    tx = result.scalar_one_or_none()
+    if tx:
+        tx.amount = new_amount
+        await db.flush()
+        await db.refresh(tx)
+        return tx
+    return None
